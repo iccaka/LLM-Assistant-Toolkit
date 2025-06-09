@@ -1,6 +1,6 @@
 # Metasim-task
 
-**
+*description here*
 
 ## Dependencies
 
@@ -20,4 +20,4 @@ in this project.
 ## License
 
 This project is licensed under the MIT License - *see the* 
-[LICENSE]() *file for details.*
+[LICENSE](https://github.com/iccaka/Metasim-task/blob/master/LICENSE.md) *file for details.*
