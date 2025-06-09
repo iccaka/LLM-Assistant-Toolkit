@@ -1,51 +1,78 @@
-import uuid
 import logging
 import httpx
-from fastapi import FastAPI, Request
-from starlette.responses import JSONResponse
+import subprocess
 
-app = FastAPI()
-OLLAMA_MODEL_NAME = 'qwen3:4b'
-OLLAMA_BASE_URL = 'http://localhost:11434/api/chat'
-chat_sessions = {}
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+EXIT_WORD = 'bye'
+FASTAPI_BASE_URL = 'http://127.0.0.1:8000'
 
 
-def start_ollama_server():
-    pass
+def __start_ollama_server():
+    subprocess.run(['ollama', 'serve'])
 
 
-@app.post('/chat')
-async def chat(request: Request):
-    client_payload = await request.json()
-    session_id = client_payload.get('session_id')
-    user_message = client_payload.get('message', '')
+def __start_fastapi_server():
+    subprocess.run(['fastapi', 'dev', 'app.py'])
 
-    logger.info('Session ID: {}'.format(session_id))
-    logger.info('User message: {}'.format(user_message))
 
-    if not session_id or session_id not in chat_sessions:
-        session_id = str(uuid.uuid4())
-        chat_sessions[session_id] = []
+def chat_with_llm():
+    print('====================\n(Use \'{}\' to exit.)\n -> *[LLM Chat Mode]*'.format(EXIT_WORD))
 
-    chat_sessions[session_id].append({'role': 'user', 'content': user_message})
-    ollama_config = {
-        'model': OLLAMA_MODEL_NAME,
-        'messages': chat_sessions[session_id],
-        'stream': False
-    }
+    while True:
+        try:
+            user_input = input('\nYou: ')
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        response = await client.post(OLLAMA_BASE_URL, json=ollama_config)
-        response.raise_for_status()
-        llm_response = response.json()
+            if user_input.lower() == EXIT_WORD:
+                break
+            else:
+                llm_response = httpx.post(FASTAPI_BASE_URL + '/chat', timeout=60.0, json={'message': user_input})
+                print('LLM: {}'.format(llm_response.json()['reply']))
+        except ValueError:
+            print('Invalid input, please try again.')
+            continue
 
-    assistant_message = llm_response['message']['content']
-    chat_sessions[session_id].append({'role': 'assistant', 'content': assistant_message})
 
-    return JSONResponse(content={'reply': assistant_message, 'session_id': session_id})
+def clean_document():
+    print('====================\n(Use \'{}\' to exit.)\n -> *[Document Clean Mode]*'.format(EXIT_WORD))
+    while True:
+        try:
+            user_input = input('\nPath to document to clean: ')
+
+            if user_input.lower() == EXIT_WORD:
+                break
+            else:
+                llm_response = 'test'
+                print('Cleaned document: {}'.format(llm_response))
+        except ValueError:
+            print('Invalid input, please try again.')
+            continue
+
+
+def __return_to_selection():
+    print('Returned to selection menu.\n(Use \'{}\' to exit.)\nSelect mode:\n\t[1] Chat with LLM\n\t[2] '
+          'Clean a document'.format(EXIT_WORD))
 
 
 if __name__ == '__main__':
-    pass
+    __start_ollama_server()
+    __start_fastapi_server()
+    logging.getLogger('httpx').disabled = True
+
+    print('(Use \'{}\' to exit.)\nSelect mode:\n\t[1] Chat with LLM\n\t[2] Clean a document'.format(EXIT_WORD))
+
+    while True:
+        try:
+            user_input = input('\nYou: '.format(EXIT_WORD))
+
+            if user_input == '1':
+                chat_with_llm()
+                __return_to_selection()
+            elif user_input == '2':
+                clean_document()
+                __return_to_selection()
+            elif user_input.lower() == EXIT_WORD:
+                break
+            else:
+                print('Invalid input. Try again.')
+        except ValueError:
+            print('Invalid input, please try again.')
+            continue
