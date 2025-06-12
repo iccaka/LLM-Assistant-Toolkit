@@ -1,17 +1,8 @@
 import logging
 import httpx
-import subprocess
 
 EXIT_WORD = 'bye'
 FASTAPI_BASE_URL = 'http://127.0.0.1:8000'
-
-
-def __start_ollama_server():
-    subprocess.run(['ollama', 'serve'])
-
-
-def __start_fastapi_server():
-    subprocess.run(['fastapi', 'dev', 'app.py'])
 
 
 def chat_with_llm():
@@ -53,8 +44,6 @@ def __return_to_selection():
 
 
 if __name__ == '__main__':
-    __start_ollama_server()
-    __start_fastapi_server()
     logging.getLogger('httpx').disabled = True
 
     print('(Use \'{}\' to exit.)\nSelect mode:\n\t[1] Chat with LLM\n\t[2] Clean a document'.format(EXIT_WORD))
