@@ -22,7 +22,7 @@
    $> pip3 install -r requirements.txt
 3. Before starting the project, both ollama and fastapi need to be running:
    ```bash
-   # start ollama
+   # start ollama (models should be pulled beforehand; explanation provided below)
    $> ollama serve
    # (optional, if you get this error message -> 'Error: listen tcp 127.0.0.1:XXXXX: bind: address already in use')
    $> systemctl stop ollama.service
@@ -31,6 +31,16 @@
    # finally run main.py
    $> python3 main.py
     ```
+   
+#### LLMs used
+
+1. qwen:1.8b
+
+In order to pull the models, run:
+
+```bash
+   $> ollama pull <model_name>
+```
 
 ## Dependencies
 
