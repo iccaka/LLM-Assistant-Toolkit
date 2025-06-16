@@ -6,7 +6,6 @@ from starlette.responses import JSONResponse
 
 app = FastAPI()
 
-# OLLAMA_CHAT_MODEL_NAME = 'qwen:1.8b'
 OLLAMA_CHAT_MODEL_NAME = 'mistral:7b'
 OLLAMA_CLEAN_MODEL_NAME = 'mistral:7b'
 OLLAMA_BASE_URL = 'http://localhost:11434/api/chat'
@@ -28,10 +27,13 @@ logger = logging.getLogger(__name__)
 async def clean(request: Request):
     client_payload = await request.json()
     user_message = client_payload.get('message', '')
-
+    logger.info('\n********-user_message-********\n\n' + user_message + '\n\n********-user_message-********\n')
     ollama_config = {
         'model': OLLAMA_CLEAN_MODEL_NAME,
-        'message': 'Can you please clean this text and reply only with the clean one?: "{}"'.format(user_message),
+        'messages': [{
+            'role': 'user',
+            'content': 'Can you please clean this text and reply only with the clean one?: \"{}\"'.format(user_message)
+        }],
         'stream': False
     }
 
