@@ -1,3 +1,20 @@
+"""
+Command-line client for interacting with a FastAPI server hosting an Ollama-based language model.
+
+Provides two modes:
+1. Chat Mode: Chat with the LLM in real-time through the `/chat` endpoint.
+2. Document Clean Mode: Reads a local text file and sends it to the `/clean` endpoint to get a cleaned version.
+
+Constants:
+- EXIT_WORD: Keyword to exit any mode or return to the main menu.
+- FASTAPI_BASE_URL: Base URL of the FastAPI server.
+- DEFAULT_TIMEOUT: Timeout in seconds for HTTP requests.
+- DEFAULT_TEXTS_DIR: Directory containing local text documents for cleaning.
+
+Requires:
+- The FastAPI app to be running locally and accessible at the configured URL.
+"""
+
 import logging
 import httpx
 
@@ -7,6 +24,15 @@ DEFAULT_TIMEOUT = 120.0
 DEFAULT_TEXTS_DIR = './sample_texts'
 
 def chat_with_llm():
+    """
+    Interactive chat loop with the LLM via the FastAPI `/chat` endpoint.
+
+    - Prompts the user for input.
+    - Sends each message to the server and prints the model's reply.
+    - Maintains no session state on the client side.
+    - Typing the EXIT_WORD ends the loop.
+    """
+
     print('====================\n(Use \'{}\' to exit.)\n -> *[LLM Chat Mode]*'.format(EXIT_WORD))
 
     while True:
@@ -25,6 +51,16 @@ def chat_with_llm():
 
 
 def clean_document():
+    """
+    Document cleaning loop using the FastAPI `/clean` endpoint.
+
+    - Prompts the user for the filename of a text document in DEFAULT_TEXTS_DIR.
+    - Reads the file and sends its content to the server for cleaning.
+    - Prints the cleaned output from the model.
+    - Typing the EXIT_WORD ends the loop.
+    - Handles file not found and invalid input errors gracefully.
+    """
+
     print('====================\n(Use \'{}\' to exit.)\n -> *[Document Clean Mode]*'.format(EXIT_WORD))
 
     while True:
@@ -49,6 +85,10 @@ def clean_document():
 
 
 def __return_to_selection():
+    """
+    Prints the main menu after completing a task, reminding the user of available options.
+    """
+
     print('Returned to selection menu.\n(Use \'{}\' to exit.)\nSelect mode:\n\t[1] Chat with LLM\n\t[2] '
           'Clean a document'.format(EXIT_WORD))
 
