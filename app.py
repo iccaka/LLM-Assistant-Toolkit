@@ -1,3 +1,31 @@
+"""
+FastAPI app integrating with a local Ollama LLM instance (e.g., mistral:7b) to support two primary endpoints:
+
+1. `/clean` - Cleans and reformats a given user message using the language model.
+2. `/chat` - Simulates a persuasive dialogue where the user acts as a salesperson and the model plays a skeptical buyer.
+
+The app uses session-based memory to track conversations, ensuring context is preserved across multiple user interactions
+during a session. It communicates with the Ollama LLM via HTTP API, using a configurable system prompt for guiding the
+chat behavior.
+
+Constants:
+- OLLAMA_CHAT_MODEL_NAME: Model used for the chat endpoint.
+- OLLAMA_CLEAN_MODEL_NAME: Model used for the cleaning task.
+- OLLAMA_BASE_URL: URL to the local Ollama API.
+- SYSTEM_PROMPT_CHAT: Prompt for instructing the model in skeptical buyer behavior.
+- DEFAULT_TIMEOUT: Timeout (in seconds) for requests to the model backend.
+
+Dependencies:
+- FastAPI for building the API
+- httpx for making asynchronous HTTP requests
+- logging for internal logs
+- uuid for generating session IDs
+- Starlette’s JSONResponse for response formatting
+
+Note:
+- No external orchestration (e.g., LangChain) is used. All interactions are raw API calls to the Ollama inference server.
+"""
+
 import uuid
 import logging
 import httpx
@@ -23,8 +51,22 @@ chat_sessions = {}
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 @app.post('/clean')
 async def clean(request: Request):
+    """
+    Cleans and reformats a user-provided text file using a language model.
+
+    This endpoint sends the input message to the local Ollama model with a prompt asking for a cleaned version
+    of the text. The model's response is returned as-is without additional formatting or metadata.
+
+    Request Body (JSON):
+    - message (str): The raw text to be cleaned.
+
+    Response (JSON):
+    - reply (str): The cleaned version of the input text.
+    """
+
     client_payload = await request.json()
     user_message = client_payload.get('message', '')
     logger.info('\n********-user_message-********\n\n' + user_message + '\n\n********-user_message-********\n')
@@ -45,8 +87,25 @@ async def clean(request: Request):
     assistant_message = llm_response['message']['content']
 
     return JSONResponse(content={'reply': assistant_message})
+
+
 @app.post('/chat')
 async def chat(request: Request):
+    """
+    Handles a session-based conversational chat with the language model.
+
+    The model plays the role of a skeptical buyer, and the user acts as a salesperson trying to pitch a product.
+    Session context is maintained using a UUID, enabling multi-turn interactions.
+
+    Request Body (JSON):
+    - message (str): The user's message in the current chat turn.
+    - session_id (str, optional): An existing session ID to continue the conversation.
+
+    Response (JSON):
+    - reply (str): The assistant's generated reply based on the current conversation context.
+    - session_id (str): The session ID for maintaining future context.
+    """
+
     client_payload = await request.json()
     session_id = client_payload.get('session_id')
     user_message = client_payload.get('message', '')
