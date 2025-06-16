@@ -32,9 +32,11 @@
    $> python3 main.py
     ```
    
+Tested on python3 version **3.10.12**
+
 #### LLMs used
 
-1. qwen:1.8b
+1. mistral:7b
 
 In order to pull the models, run:
 
